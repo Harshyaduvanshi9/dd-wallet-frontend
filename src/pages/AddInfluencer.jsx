@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
 function AddInfluencer() {
   const API = import.meta.env.VITE_API_URL;
+
   const [data, setData] = useState({
     name: "",
     youtubeUrl: "",
@@ -12,6 +13,11 @@ function AddInfluencer() {
 
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState("");
+
+  // 🔥 Pre-warm backend (IMPORTANT for Render)
+  useEffect(() => {
+    fetch(API).catch(() => {}); // silent fail
+  }, [API]);
 
   const handleSubmit = async () => {
     if (!data.name || !data.youtubeUrl || !data.referralLink) {
@@ -28,7 +34,8 @@ function AddInfluencer() {
         {
           headers: {
             Authorization: "12345"
-          }
+          },
+          timeout: 10000 // 🔥 prevent long hanging
         }
       );
 
@@ -39,7 +46,15 @@ function AddInfluencer() {
 
     } catch (err) {
       console.error(err);
-      toast.error("Unauthorized or error");
+
+      if (err.code === "ECONNABORTED") {
+        toast.error("Server is slow, please try again");
+      } else if (err.response?.status === 403) {
+        toast.error("Unauthorized access");
+      } else {
+        toast.error("Something went wrong");
+      }
+
     } finally {
       setLoading(false);
     }
@@ -79,10 +94,11 @@ function AddInfluencer() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className={`w-full p-2 rounded text-white transition ${loading
+          className={`w-full p-2 rounded text-white transition ${
+            loading
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700 cursor-pointer"
-            }`}
+          }`}
         >
           {loading ? "Creating..." : "Submit"}
         </button>
@@ -100,7 +116,7 @@ function AddInfluencer() {
               />
               <button
                 onClick={copyLink}
-                className="bg-blue-600 text-white px-3 rounded cursor-pointer"
+                className="bg-blue-600 text-white px-3 rounded cursor-pointer hover:bg-blue-700"
               >
                 Copy
               </button>
