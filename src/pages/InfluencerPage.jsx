@@ -10,7 +10,6 @@ function InfluencerPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🔥 YouTube embed converter
   const getEmbedUrl = (url) => {
     try {
       let videoId = "";
@@ -29,7 +28,6 @@ function InfluencerPage() {
     }
   };
 
-  // 🔥 Fetch with retry (IMPORTANT for Render)
   const fetchData = async (retry = 0) => {
     try {
       const res = await axios.get(
@@ -50,15 +48,18 @@ function InfluencerPage() {
   };
 
   useEffect(() => {
-    // 🔥 Pre-warm backend
     fetch(API).catch(() => {});
     fetchData();
   }, [slug]);
 
-  // 🔥 Skeleton Loading UI
+  // 🔥 COMMON CONTAINER (FIXED)
+  const containerClass =
+    "min-h-screen flex justify-center items-start sm:items-center bg-gray-100 px-4 pt-16 sm:pt-0";
+
+  // 🔥 Loading UI
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className={containerClass}>
         <div className="w-full max-w-2xl bg-white p-6 rounded-xl shadow animate-pulse">
 
           <div className="h-6 bg-gray-300 rounded w-1/2 mx-auto mb-4"></div>
@@ -79,27 +80,29 @@ function InfluencerPage() {
   // 🔥 Error UI
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <p className="text-red-500 mb-4">{error}</p>
+      <div className={containerClass}>
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
 
-        <button
-          onClick={() => {
-            setLoading(true);
-            setError("");
-            fetchData();
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer"
-        >
-          Retry
-        </button>
+          <button
+            onClick={() => {
+              setLoading(true);
+              setError("");
+              fetchData();
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
-  // 🔥 If no data found
+  // 🔥 No data
   if (!data) {
     return (
-      <div className="text-center mt-10">
+      <div className={containerClass}>
         <p>Influencer not found</p>
       </div>
     );
@@ -107,14 +110,14 @@ function InfluencerPage() {
 
   // 🔥 Main UI
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-4 sm:p-6 text-center">
+    <div className={containerClass}>
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-5 sm:p-6 text-center">
 
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-5">
           {data.name}
         </h1>
 
-        <div className="w-full aspect-video mb-4">
+        <div className="w-full aspect-video mb-5">
           {data.youtubeUrl && (
             <iframe
               loading="lazy"
